@@ -158,7 +158,13 @@ def business_days_between(
 
 
 def list_holidays(year: int, country: str) -> dict[str, Any]:
-    raise NotImplementedError  # pragma: no cover
+    """List all holidays for a given year and country, sorted by date."""
+    hols = _get_country_holidays(country, years=year)
+    return {
+        "year": year,
+        "country": country.upper(),
+        "holidays": [{"date": d.isoformat(), "name": name} for d, name in sorted(hols.items())],
+    }
 
 
 def get_supported_countries() -> dict[str, Any]:
