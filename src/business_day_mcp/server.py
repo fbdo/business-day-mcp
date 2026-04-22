@@ -130,7 +130,31 @@ def last_business_day_of_month(year: int, month: int, country: str) -> dict[str,
 def business_days_between(
     start_date: str, end_date: str, country: str, inclusive: bool = False
 ) -> dict[str, Any]:
-    raise NotImplementedError  # pragma: no cover
+    """Count business days and list weekday holidays between two dates."""
+    start = _parse_date(start_date)
+    end = _parse_date(end_date)
+    if start > end:
+        raise ValueError("start_date must be on or before end_date")
+    hols = _get_country_holidays(country, years=list(range(start.year, end.year + 1)))
+    last = end if inclusive else end - datetime.timedelta(days=1)
+    business_days = 0
+    holidays_in_range: list[dict[str, str]] = []
+    d = start
+    while d <= last:
+        if _is_business_day(d, hols):
+            business_days += 1
+        if d in hols and not _is_weekend(d):
+            holidays_in_range.append({"date": d.isoformat(), "name": hols[d]})
+        d += datetime.timedelta(days=1)
+    return {
+        "start_date": start_date,
+        "end_date": end_date,
+        "country": country.upper(),
+        "inclusive": inclusive,
+        "business_days": business_days,
+        "calendar_days": (end - start).days + (1 if inclusive else 0),
+        "holidays_in_range": holidays_in_range,
+    }
 
 
 def list_holidays(year: int, country: str) -> dict[str, Any]:
