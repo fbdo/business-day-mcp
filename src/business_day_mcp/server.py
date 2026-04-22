@@ -167,8 +167,32 @@ def list_holidays(year: int, country: str) -> dict[str, Any]:
     }
 
 
+def _country_display_name(code: str) -> str:
+    cls = getattr(holidays, code, None)
+    if cls is None:
+        return code
+    name = getattr(cls, "country_name", None)
+    if name:
+        return str(name)
+    doc = getattr(cls, "__doc__", None)
+    if doc:
+        return str(doc).strip().split("\n")[0]
+    return code
+
+
 def get_supported_countries() -> dict[str, Any]:
-    raise NotImplementedError  # pragma: no cover
+    """List all countries supported by the holidays library."""
+    try:
+        codes = list(holidays.utils.list_supported_countries().keys())
+    except (AttributeError, ImportError):
+        registry = getattr(holidays, "registry", None)
+        registered: Any = getattr(registry, "registered_countries", lambda: [])
+        codes = list(registered())
+    countries = sorted(
+        ({"code": code, "name": _country_display_name(code)} for code in codes if len(code) == 2),
+        key=lambda c: c["code"],
+    )
+    return {"countries": countries, "total": len(countries)}
 
 
 mcp.tool(get_current_date)
