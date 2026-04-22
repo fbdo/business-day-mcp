@@ -98,7 +98,14 @@ def next_business_day(date: str, country: str, inclusive: bool = False) -> dict[
 
 
 def previous_business_day(date: str, country: str, inclusive: bool = False) -> dict[str, Any]:
-    raise NotImplementedError  # pragma: no cover
+    """Return the previous business day on/before (inclusive) or strictly before `date`."""
+    d, candidate, skipped = _step_business_day(date, country, inclusive, step=-1)
+    return {
+        "input_date": d.isoformat(),
+        "previous_business_day": candidate.isoformat(),
+        "country": country.upper(),
+        "skipped_days": skipped,
+    }
 
 
 def last_business_day_of_month(year: int, month: int, country: str) -> dict[str, Any]:
