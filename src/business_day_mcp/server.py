@@ -72,8 +72,29 @@ def get_current_date(timezone: str = "UTC") -> dict[str, Any]:
     }
 
 
+def _step_business_day(
+    date: str, country: str, inclusive: bool, step: int
+) -> tuple[datetime.date, datetime.date, int]:
+    """Advance `step` days at a time from `date` until a business day is found."""
+    d = _parse_date(date)
+    hols = _get_country_holidays(country, years=sorted({d.year, d.year + step}))
+    candidate = d if inclusive else d + datetime.timedelta(days=step)
+    skipped = 0 if inclusive else 1
+    while not _is_business_day(candidate, hols):
+        candidate += datetime.timedelta(days=step)
+        skipped += 1
+    return d, candidate, skipped
+
+
 def next_business_day(date: str, country: str, inclusive: bool = False) -> dict[str, Any]:
-    raise NotImplementedError  # pragma: no cover
+    """Return the next business day on/after (inclusive) or strictly after `date`."""
+    d, candidate, skipped = _step_business_day(date, country, inclusive, step=1)
+    return {
+        "input_date": d.isoformat(),
+        "next_business_day": candidate.isoformat(),
+        "country": country.upper(),
+        "skipped_days": skipped,
+    }
 
 
 def previous_business_day(date: str, country: str, inclusive: bool = False) -> dict[str, Any]:
