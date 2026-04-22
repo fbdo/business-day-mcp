@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.10"
 license = "MIT"
 authors = [
-    { name = "Fabio Oliveira", email = "fabiool@amazon.de" }
+    { name = "Fabio Oliveira", email = "fabio.braga@gmail.com" }
 ]
 keywords = ["mcp", "business-day", "holidays", "calendar", "model-context-protocol"]
 classifiers = [
