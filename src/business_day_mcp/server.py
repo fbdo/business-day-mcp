@@ -12,6 +12,10 @@ from fastmcp import FastMCP
 
 mcp = FastMCP("business-day-mcp")
 
+# DoS guards for date iteration (SR-F4).
+_MAX_SPAN_YEARS = 100
+_MAX_STEP_ITERATIONS = 3650  # ~10 years; far exceeds any real holiday gap.
+
 
 def _parse_date(date_str: str) -> datetime.date:
     try:
@@ -78,12 +82,16 @@ def _step_business_day(
 ) -> tuple[datetime.date, datetime.date, int]:
     """Advance `step` days at a time from `date` until a business day is found."""
     d = _parse_date(date)
-    hols = _get_country_holidays(country, years=sorted({d.year, d.year + step}))
+    hols = _get_country_holidays(country, years=d.year)
     candidate = d if inclusive else d + datetime.timedelta(days=step)
     skipped = 0 if inclusive else 1
+    iterations = 0
     while not _is_business_day(candidate, hols):
         candidate += datetime.timedelta(days=step)
         skipped += 1
+        iterations += 1
+        if iterations > _MAX_STEP_ITERATIONS:
+            raise ValueError("Could not find a business day within 10 years of input.")
     return d, candidate, skipped
 
 
@@ -135,6 +143,11 @@ def business_days_between(
     end = _parse_date(end_date)
     if start > end:
         raise ValueError("start_date must be on or before end_date")
+    span_years = end.year - start.year
+    if span_years > _MAX_SPAN_YEARS:
+        raise ValueError(
+            f"Date range too large: {span_years} years exceeds max {_MAX_SPAN_YEARS} years."
+        )
     hols = _get_country_holidays(country, years=list(range(start.year, end.year + 1)))
     last = end if inclusive else end - datetime.timedelta(days=1)
     business_days = 0
@@ -185,8 +198,7 @@ def get_supported_countries() -> dict[str, Any]:
     countries = sorted(
         (
             {"code": code, "name": _country_display_name(code)}
-            for code in holidays.utils.list_supported_countries()
-            if len(code) == 2
+            for code in holidays.utils.list_supported_countries(include_aliases=False)
         ),
         key=lambda c: c["code"],
     )

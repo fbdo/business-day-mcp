@@ -37,9 +37,6 @@ coverage.xml
 .mypy_cache/
 .ruff_cache/
 
-# Secrets scanning
-.secrets.baseline
-
 # macOS
 .DS_Store
 
