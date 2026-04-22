@@ -10,7 +10,7 @@ from typing import Any
 import holidays
 from fastmcp import FastMCP
 
-mcp: FastMCP = FastMCP("business-day-mcp")
+mcp = FastMCP("business-day-mcp")
 
 
 def _parse_date(date_str: str) -> datetime.date:
@@ -182,14 +182,12 @@ def _country_display_name(code: str) -> str:
 
 def get_supported_countries() -> dict[str, Any]:
     """List all countries supported by the holidays library."""
-    try:
-        codes = list(holidays.utils.list_supported_countries().keys())
-    except (AttributeError, ImportError):
-        registry = getattr(holidays, "registry", None)
-        registered: Any = getattr(registry, "registered_countries", lambda: [])
-        codes = list(registered())
     countries = sorted(
-        ({"code": code, "name": _country_display_name(code)} for code in codes if len(code) == 2),
+        (
+            {"code": code, "name": _country_display_name(code)}
+            for code in holidays.utils.list_supported_countries()
+            if len(code) == 2
+        ),
         key=lambda c: c["code"],
     )
     return {"countries": countries, "total": len(countries)}
