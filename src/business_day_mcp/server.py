@@ -53,6 +53,45 @@ def is_business_day(date: str, country: str) -> dict[str, Any]:
 mcp.tool(is_business_day)
 
 
+def get_current_date(timezone: str = "UTC") -> dict[str, Any]:
+    raise NotImplementedError  # pragma: no cover
+
+
+def next_business_day(date: str, country: str, inclusive: bool = False) -> dict[str, Any]:
+    raise NotImplementedError  # pragma: no cover
+
+
+def previous_business_day(date: str, country: str, inclusive: bool = False) -> dict[str, Any]:
+    raise NotImplementedError  # pragma: no cover
+
+
+def last_business_day_of_month(year: int, month: int, country: str) -> dict[str, Any]:
+    raise NotImplementedError  # pragma: no cover
+
+
+def business_days_between(
+    start_date: str, end_date: str, country: str, inclusive: bool = False
+) -> dict[str, Any]:
+    raise NotImplementedError  # pragma: no cover
+
+
+def list_holidays(year: int, country: str) -> dict[str, Any]:
+    raise NotImplementedError  # pragma: no cover
+
+
+def get_supported_countries() -> dict[str, Any]:
+    raise NotImplementedError  # pragma: no cover
+
+
+mcp.tool(get_current_date)
+mcp.tool(next_business_day)
+mcp.tool(previous_business_day)
+mcp.tool(last_business_day_of_month)
+mcp.tool(business_days_between)
+mcp.tool(list_holidays)
+mcp.tool(get_supported_countries)
+
+
 def main() -> None:
     """Run the MCP server over stdio."""
     mcp.run()
