@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import calendar
 import datetime
 import zoneinfo
 from typing import Any
@@ -109,7 +110,21 @@ def previous_business_day(date: str, country: str, inclusive: bool = False) -> d
 
 
 def last_business_day_of_month(year: int, month: int, country: str) -> dict[str, Any]:
-    raise NotImplementedError  # pragma: no cover
+    """Return the last business day of a given month for a country."""
+    if not 1 <= month <= 12:
+        raise ValueError(f"Invalid month: {month}. Must be 1-12.")
+    hols = _get_country_holidays(country, years=year)
+    last_calendar_day = datetime.date(year, month, calendar.monthrange(year, month)[1])
+    d = last_calendar_day
+    while not _is_business_day(d, hols):
+        d -= datetime.timedelta(days=1)
+    return {
+        "year": year,
+        "month": month,
+        "country": country.upper(),
+        "last_business_day": d.isoformat(),
+        "last_calendar_day": last_calendar_day.isoformat(),
+    }
 
 
 def business_days_between(
