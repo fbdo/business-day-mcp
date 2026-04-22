@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import datetime
+import zoneinfo
 from typing import Any
 
 import holidays
@@ -54,7 +55,21 @@ mcp.tool(is_business_day)
 
 
 def get_current_date(timezone: str = "UTC") -> dict[str, Any]:
-    raise NotImplementedError  # pragma: no cover
+    """Return the current date in the given IANA timezone."""
+    try:
+        tz = zoneinfo.ZoneInfo(timezone)
+    except (zoneinfo.ZoneInfoNotFoundError, ValueError) as e:
+        raise ValueError(
+            f"Unknown timezone: {timezone}. Use IANA timezone names like "
+            "'Europe/Berlin' or 'America/New_York'."
+        ) from e
+    now = datetime.datetime.now(tz=tz)
+    return {
+        "date": now.date().isoformat(),
+        "timezone": timezone,
+        "day_of_week": now.strftime("%A"),
+        "iso_week": now.isocalendar().week,
+    }
 
 
 def next_business_day(date: str, country: str, inclusive: bool = False) -> dict[str, Any]:
