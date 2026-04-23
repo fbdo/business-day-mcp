@@ -17,7 +17,7 @@ A navigation map for AI coding assistants. For deeper reference, open the per-to
 
 ## What this repo is
 
-An MCP (Model Context Protocol) server that exposes 8 read-only tools for business-day and holiday arithmetic across 60+ countries. Single Python package, stdio transport via FastMCP, all country knowledge delegated to the `holidays` library.
+An MCP (Model Context Protocol) server that exposes 9 read-only tools for business-day and holiday arithmetic across 60+ countries. Single Python package, stdio transport via FastMCP, all country knowledge delegated to the `holidays` library.
 
 ## Directory Map
 
@@ -43,7 +43,7 @@ business-day-mcp/
 | Question | Open |
 |----------|------|
 | "How is the server started?" | `src/business_day_mcp/server.py → main()` (calls `mcp.run()`, stdio) |
-| "What tools exist?" | `server.py` — search for `mcp.tool(` (8 registrations) |
+| "What tools exist?" | `server.py` — search for `mcp.tool(` (9 registrations) |
 | "What's the CLI command?" | `pyproject.toml → [project.scripts]` → `business-day-mcp` |
 | "What's the response shape of tool X?" | `.agents/summary/interfaces.md` |
 | "Why isn't there a cache?" | `.agents/summary/architecture.md` → Principle #10 |
@@ -52,12 +52,15 @@ business-day-mcp/
 
 ### MCP tools (`src/business_day_mcp/server.py`)
 
-The entire runtime is one file. It defines a global `mcp = FastMCP("business-day-mcp")`, eight public tool functions, private helpers, and `main()`. Tools are registered imperatively with `mcp.tool(fn)` after each definition (no `@decorator` syntax in this repo). The eight tools:
+The entire runtime is one file. It defines a global `mcp = FastMCP("business-day-mcp")`, nine public tool functions, private helpers, and `main()`. Tools are registered imperatively with `mcp.tool(fn)` after each definition (no `@decorator` syntax in this repo). The nine tools:
 
 ```
 is_business_day, get_current_date, next_business_day, previous_business_day,
-last_business_day_of_month, business_days_between, list_holidays, get_supported_countries
+last_business_day_of_month, business_days_between, list_holidays,
+get_supported_countries, get_supported_subdivisions
 ```
+
+`get_supported_subdivisions(country="DE")` → `{country: "DE", subdivisions: ["BY", ...], aliases: {"Bavaria": "BY", ...}}` — scoped, per-country subdivision discovery with alias names.
 
 Deep dive: `.agents/summary/components.md` and `.agents/summary/interfaces.md`.
 
@@ -73,6 +76,7 @@ One file per concern. `conftest.py` exposes DE/US 2026 reference-date fixtures �
 | `test_metadata.py` | `list_holidays`, `get_supported_countries` |
 | `test_edge_cases.py` | tz edges, US/DE holiday-on-weekend observance |
 | `test_case_insensitive_country.py` | country `.upper()` normalization |
+| `test_subdiv.py` | optional `subdiv` parameter + subdivisions in `get_supported_countries` |
 | `test_statelessness.py` | Principle #10 — **do not delete; monkeypatches `holidays.country_holidays` to enforce no caching** |
 
 ### CI / release (`.github/workflows/`)
@@ -87,6 +91,7 @@ One file per concern. `conftest.py` exposes DE/US 2026 reference-date fixtures �
 - **Statelessness (Principle #10)**: `holidays.country_holidays(...)` is called fresh on every tool invocation. No memoization, no LRU, no module-level cache. Enforced by `tests/test_statelessness.py`. If you ever need caching, update the test and `.agents/summary/architecture.md` in the same change.
 - **DoS guards**: `_MAX_SPAN_YEARS = 100` (used by `business_days_between`) and `_MAX_STEP_ITERATIONS = 3650` (used by `_step_business_day`). Both raise `ValueError`. Keep them.
 - **Case-insensitive country**: `_get_country_holidays` calls `.upper()` on input; responses echo the normalized code. Callers may pass any case.
+- **Case-sensitive subdiv**: `_get_country_holidays` accepts an optional `subdiv` (passed through unchanged — **do NOT** `.upper()` it, because aliases like `"Bayern"` are mixed-case). Every country-aware tool forwards `subdiv` and echoes it in the response only when the caller supplied it (additive, backward-compatible). `get_supported_countries` exposes each country's `subdivisions: list[str]` (empty list when none). Category filtering (catholic/evangelical/etc.) is **not** currently plumbed — the library's default category union is returned.
 - **Weekend is Sat/Sun only**: No per-country weekend override exists. This is deliberate — see `.agents/summary/architecture.md → What Is Deliberately Absent`.
 - **Errors are `ValueError`**: All validation failures raise `ValueError` with actionable messages. FastMCP serializes these as tool errors. No custom exception hierarchy.
 - **Plain `dict[str, Any]` responses**: No Pydantic, no TypedDict. If you add a tool, follow the existing pattern.
