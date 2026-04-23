@@ -88,6 +88,26 @@ Add to your `mcp.json`:
 }
 ```
 
+### From a local clone
+
+Run `uv sync --all-extras` in the cloned repo first, then replace `/absolute/path/to/business-day-mcp` below with the clone's absolute path (you can copy the same `autoApprove` array from the package example above if desired):
+
+```json
+{
+  "mcpServers": {
+    "business-day": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        "/absolute/path/to/business-day-mcp",
+        "run",
+        "business-day-mcp"
+      ]
+    }
+  }
+}
+```
+
 ## Conventions
 
 - Dates: ISO 8601 strings (`YYYY-MM-DD`).
