@@ -48,3 +48,15 @@ coverage.xml
 # Environment
 .env
 .env.local
+
+# Agent/editor local state
+.kiro/
+
+# Env files (keep template)
+.env.*
+!.env.example
+
+# Misc
+*.swo
+*.log
+Thumbs.db
