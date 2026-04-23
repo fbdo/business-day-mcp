@@ -108,6 +108,170 @@ Run `uv sync --all-extras` in the cloned repo first, then replace `/absolute/pat
 }
 ```
 
+## Usage Examples
+
+The examples below show typical agent questions and the actual JSON returned by the server. Dates reflect the real 2025/2026 calendars from the `holidays` library.
+
+### Is this a business day?
+
+> "Is July 4, 2025 a business day in the US?"
+
+Tool call: `is_business_day(date="2025-07-04", country="US")`
+
+```json
+{
+  "date": "2025-07-04",
+  "country": "US",
+  "is_business_day": false,
+  "is_weekend": false,
+  "is_holiday": true,
+  "holiday_name": "Independence Day"
+}
+```
+
+### Today's date in a specific timezone
+
+> "What's today's date in New York?"
+
+Tool call: `get_current_date(timezone="America/New_York")`
+
+```json
+{
+  "date": "2026-04-23",
+  "timezone": "America/New_York",
+  "day_of_week": "Thursday",
+  "iso_week": 17
+}
+```
+
+### Next business day
+
+> "I'm scheduling a task for July 3, 2025 in the US. What's the next business day after that?"
+
+Tool call: `next_business_day(date="2025-07-03", country="US")`
+
+```json
+{
+  "input_date": "2025-07-03",
+  "next_business_day": "2025-07-07",
+  "country": "US",
+  "skipped_days": 4
+}
+```
+
+### Previous business day
+
+> "What was the last business day before July 4, 2025 in the US?"
+
+Tool call: `previous_business_day(date="2025-07-04", country="US")`
+
+```json
+{
+  "input_date": "2025-07-04",
+  "previous_business_day": "2025-07-03",
+  "country": "US",
+  "skipped_days": 1
+}
+```
+
+### Last business day of the month
+
+> "When is the last business day of May 2026 in the US?"
+
+Tool call: `last_business_day_of_month(year=2026, month=5, country="US")`
+
+```json
+{
+  "year": 2026,
+  "month": 5,
+  "country": "US",
+  "last_business_day": "2026-05-29",
+  "last_calendar_day": "2026-05-31"
+}
+```
+
+### Business days between two dates
+
+> "How many business days are between December 20, 2025 and January 5, 2026 in the US?"
+
+Tool call: `business_days_between(start_date="2025-12-20", end_date="2026-01-05", country="US")`
+
+```json
+{
+  "start_date": "2025-12-20",
+  "end_date": "2026-01-05",
+  "country": "US",
+  "inclusive": false,
+  "business_days": 8,
+  "calendar_days": 16,
+  "holidays_in_range": [
+    { "date": "2025-12-25", "name": "Christmas Day" },
+    { "date": "2026-01-01", "name": "New Year's Day" }
+  ]
+}
+```
+
+### List holidays for a year (regional subdivision)
+
+> "List the 2026 public holidays in Bavaria, Germany."
+
+Tool call: `list_holidays(year=2026, country="DE", subdiv="BY")`
+
+```json
+{
+  "year": 2026,
+  "country": "DE",
+  "holidays": [
+    { "date": "2026-01-01", "name": "New Year's Day" },
+    { "date": "2026-01-06", "name": "Epiphany" },
+    { "date": "2026-04-03", "name": "Good Friday" },
+    { "date": "2026-04-06", "name": "Easter Monday" },
+    { "date": "2026-05-01", "name": "Labor Day" },
+    { "date": "2026-05-14", "name": "Ascension Day" },
+    { "date": "2026-05-25", "name": "Whit Monday" },
+    { "date": "2026-06-04", "name": "Corpus Christi" },
+    { "date": "2026-10-03", "name": "German Unity Day" },
+    { "date": "2026-11-01", "name": "All Saints' Day" },
+    { "date": "2026-12-25", "name": "Christmas Day" },
+    { "date": "2026-12-26", "name": "Second Day of Christmas" }
+  ],
+  "subdiv": "BY"
+}
+```
+
+### Discover supported subdivisions
+
+> "Which German states (subdivisions) can I use for holiday lookups?"
+
+Tool call: `get_supported_subdivisions(country="DE")`
+
+```json
+{
+  "country": "DE",
+  "subdivisions": ["BB","BE","BW","BY","HB","HE","HH","MV","NI","NW","RP","SH","SL","SN","ST","TH","Augsburg"],
+  "aliases": {
+    "Brandenburg": "BB",
+    "Berlin": "BE",
+    "Baden-Württemberg": "BW",
+    "Bayern": "BY",
+    "Bremen": "HB",
+    "Hessen": "HE",
+    "Hamburg": "HH",
+    "Mecklenburg-Vorpommern": "MV",
+    "Niedersachsen": "NI",
+    "Nordrhein-Westfalen": "NW",
+    "Rheinland-Pfalz": "RP",
+    "Schleswig-Holstein": "SH",
+    "Saarland": "SL",
+    "Sachsen": "SN",
+    "Sachsen-Anhalt": "ST",
+    "Thüringen": "TH"
+  }
+}
+```
+
+- See `get_supported_countries()` for the full list of 250+ supported countries and their subdivision codes.
+
 ## Conventions
 
 - Dates: ISO 8601 strings (`YYYY-MM-DD`).
