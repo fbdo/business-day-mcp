@@ -358,16 +358,12 @@ def list_holidays(year: int, country: str, subdiv: str | None = None) -> dict[st
 
 
 def _country_display_name(code: str) -> str:
-    cls = getattr(holidays, code, None)
-    if cls is None:
+    try:
+        parent = holidays.country_holidays(code).__class__.__mro__[1]
+        first = (parent.__doc__ or "").strip().split("\n", 1)[0]
+        return first.removesuffix("holidays.").strip().rstrip(".") or code
+    except Exception:
         return code
-    name = getattr(cls, "country_name", None)
-    if name:
-        return str(name)
-    doc = getattr(cls, "__doc__", None)
-    if doc:
-        return str(doc).strip().split("\n")[0]
-    return code
 
 
 def _country_subdivisions(code: str) -> list[str]:

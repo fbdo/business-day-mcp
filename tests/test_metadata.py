@@ -60,3 +60,14 @@ class TestGetSupportedCountries:
             assert "name" in entry
             assert len(entry["code"]) == 2  # ISO 3166-1 alpha-2
             assert entry["name"]  # non-empty
+
+    def test_name_is_human_readable_not_lazy_loader_doc(self):
+        result = get_supported_countries()
+        by_code = {c["code"]: c["name"] for c in result["countries"]}
+        bad = "Country and financial holidays entities lazy loader."
+        assert all(name != bad for name in by_code.values())
+        assert "United States" in by_code["US"]
+        assert "Germany" in by_code["DE"]
+        assert "United Kingdom" in by_code["GB"]
+        assert "Japan" in by_code["JP"]
+        assert "Brazil" in by_code["BR"]

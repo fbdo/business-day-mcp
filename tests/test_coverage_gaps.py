@@ -57,19 +57,9 @@ class TestCountryDisplayNameFallbacks:
         # cls is None branch.
         assert _country_display_name("ZZZ") == "ZZZ"
 
-    def test_country_name_attr_used(self, monkeypatch):
-        class Fake:
-            country_name = "Fakeland"
-
-        monkeypatch.setattr(server.holidays, "XX", Fake, raising=False)
-        assert _country_display_name("XX") == "Fakeland"
-
-    def test_no_name_no_doc_returns_code(self, monkeypatch):
-        class Fake:
-            __doc__ = None
-
-        monkeypatch.setattr(server.holidays, "XX", Fake, raising=False)
-        assert _country_display_name("XX") == "XX"
+    def test_unknown_code_falls_back_to_code(self):
+        # Unknown / unsupported country code should fall back to the code itself
+        assert _country_display_name("ZZ") == "ZZ"
 
 
 class TestCountrySubdivisionsExceptionBranch:
