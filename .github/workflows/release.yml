@@ -1,0 +1,35 @@
+# Runs after CI succeeds on main.
+# python-semantic-release inspects Conventional Commits since the last tag,
+# bumps pyproject.toml + src/business_day_mcp/__init__.py, commits the bump,
+# creates and pushes a v{version} tag. The tag push triggers publish.yml,
+# which builds and uploads to PyPI via the OIDC Trusted Publisher.
+
+name: Release
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    branches: [main]
+    types: [completed]
+
+concurrency:
+  group: release-main
+  cancel-in-progress: false
+
+jobs:
+  release:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # push the version-bump commit and tag
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: main
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Python Semantic Release
+        uses: python-semantic-release/python-semantic-release@v9.21.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}

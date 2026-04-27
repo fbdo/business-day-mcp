@@ -103,3 +103,18 @@ exclude_lines = [
 
 [tool.bandit]
 exclude_dirs = ["tests"]
+
+[tool.semantic_release]
+version_toml = ["pyproject.toml:project.version"]
+version_variables = ["src/business_day_mcp/__init__.py:__version__"]
+branch = "main"
+tag_format = "v{version}"
+commit_message = "chore(release): {version} [skip ci]"
+upload_to_pypi = false
+upload_to_release = false
+build_command = ""
+
+[tool.semantic_release.commit_parser_options]
+allowed_tags = ["feat", "fix", "perf", "refactor", "docs", "chore", "style", "test", "build", "ci"]
+minor_tags = ["feat"]
+patch_tags = ["fix", "perf"]
